@@ -1,7 +1,7 @@
 
 //creating a conversion for pixel location to rows and columns
 function rowToPixel(row){
-    return (row * 83) - 20;
+    return (row * 83);
 }
 
 function columnToPixel(column){
@@ -18,7 +18,7 @@ var Enemy = function() {
     this.sprite = 'images/enemy-bug.png';
     this.speed = columnToPixel((Math.random() * 3) + 2);
     this.x = -101;
-    this.y = rowToPixel(((Math.round(Math.random()) * 2) + 1));
+    this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) - 20;
 };
 
 // Update the enemy's position, required method for game
@@ -103,11 +103,11 @@ player.prototype.handleInput = function(e){
         console.log("with this e, this.x is now " + this.x);
     }
     if (e == "up") {
-        this.y = Math.max(0, (this.y - rowToPixel(1)));
+        this.y = Math.max(-10, (this.y - rowToPixel(1)));
         console.log("up adjustments made");
     }
     if (e == "down") {
-        this.y = Math.min(rowToPixel(5), (this.y + rowToPixel(1) - 3));
+        this.y = Math.min(rowToPixel(5) - 10, (this.y + rowToPixel(1)));
     }
 };
 
