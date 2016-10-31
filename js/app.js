@@ -13,7 +13,10 @@ function columnToPixel(column){
 
 var gemCycleStart = Date.now();
 
+// Other variables we will need later
 var scared = false;
+var allEnemies = [];
+var lastBugTime;
 
 // Enemies our player must avoid
 
@@ -79,7 +82,7 @@ Enemy.prototype.render = function() {
 // This class requires an update(), render() and
 // a handleInput() method.
 
-var player = function() {
+var Player = function() {
     if (!this.x) {
         this.x = columnToPixel(2);
         //use -10 modifier to adjust for characters' size
@@ -93,7 +96,7 @@ var player = function() {
     };
 };
 
-player.prototype.handleInput = function(e){
+Player.prototype.handleInput = function(e){
 // takes keystroke values from the eventlistener that has been provided
 // and translates them into motion for the character (well, it changes the x and y values, so that the render
 // function can place the character correctly.
@@ -137,8 +140,14 @@ player.prototype.handleInput = function(e){
     }
 };
 
-player.prototype.update = function() {
-    console.log("player.update run");
+
+Player.prototype.update = function() {
+// reset game if player reaches the water
+   if (this.y == -10) {
+        this.x = columnToPixel(2);
+        this.y = rowToPixel(5) - 10;
+        Enemy.createFirstBug();
+    }
 };
 
 var gem = function() {
@@ -162,26 +171,22 @@ gem.prototype.render = function() {
     }
 }
 
+Enemy.createFirstBug = function() {
+    var bug = new Enemy();
+    lastBugTime = Date.now();
+    allEnemies = [];
+    allEnemies.push(bug);
+}
+
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 
 if (!lastBugTime) {
-    console.log("lastBugTime was undefined");
-    console.log("Creating first bug");
-    var bug = new Enemy();
-    console.log("hello?");
-    var lastBugTime = Date.now();
-    console.log("lastBugTime =" + lastBugTime);
+    Enemy.createFirstBug();
 }
 
-if (!allEnemies) {
-    var allEnemies = [];
-}
-
-allEnemies.push(bug);
-
-var player = new player();
+var player = new Player();
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
