@@ -139,14 +139,6 @@ player.prototype.handleInput = function(e){
 
 player.prototype.update = function() {
     console.log("player.update run");
-   /* allEnemies.forEach(function(enemyBug) {
-        if (((player.x + 33) <= (enemyBug.x + 98)) && ((player.x + 50) >=
-            (enemyBug.x + 2)) && (player.y == (enemyBug.y +10))  ) {
-            console.log("player.y is " + player.y + " and enemyBug.y is " + enemyBug.y);
-            player.x = columnToPixel(2);
-            player.y = rowToPixel(5) - 10;
-        }
-    }) */
 };
 
 var gem = function() {
