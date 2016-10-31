@@ -1,5 +1,6 @@
 
-//creating a conversion for pixel location to rows and columns
+//create conversions for rows and columns to pixel values
+
 function rowToPixel(row){
     return (row * 83);
 }
@@ -8,16 +9,21 @@ function columnToPixel(column){
     return column * 101;
 }
 
-// Enemies our player must avoid
-var Enemy = function() {
-    // Variables applied to each of our instances go here,
-    // we've provided one for you to get started
+//start timer for intermittent appearance of gems
 
+var gemCycleStart = Date.now();
+
+var scared = false;
+
+// Enemies our player must avoid
+
+var Enemy = function() {
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
     this.sprite = 'images/enemy-bug.png';
     this.speed = columnToPixel((Math.random() * 3) + 2);
     this.x = -101;
+    //use -20 modifier to adjust for enemies' size
     this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) - 20;
 };
 
@@ -25,18 +31,36 @@ var Enemy = function() {
 // Parameter: dt, a time delta between ticks
 
 Enemy.prototype.update = function(dt) {
-    // You should multiply any movement by the dt parameter
+    // Multiply movement by the dt parameter
     // which will ensure the game runs at the same speed for
     // all computers.
-    this.x = this.x + this.speed * dt;
+    if (scared == false) {
+        this.x = this.x + this.speed * dt;
+    }
+    if (scared == true) {
+        if (this.x > player.x) {
+            this.x = this.x + (this.speed * .67 * dt);
+        } else {
+            this.x = this.x - (this.speed * .67 * dt);
+        }
+    }
     this.y = this.y;
-};
+    };
 
 // if we do have a Creature superclass, we can have the Render function stored at Creatures.prototype.render since it's the same.
 // Draw the enemy on the screen, required method for game
 Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
- //   console.log("enemy rendered");
+    // Generate another enemy if a suitable amount of time has passed.
+    // This code creates more enemies than in the provided demo video, in order
+    // to make a more challenging game.
+    if (Date.now() - lastBugTime >= (Math.random() * 1000) + 250) {
+        console.log("creating new bug!");
+        var newBug = new Enemy();
+        lastBugTime = Date.now();
+        allEnemies.push(newBug);
+        console.log("next bug status: " + lastBugTime - Date.now() >= (Math.random() * 1.5) + 1.5);
+    }
 };
 
 // Now write your own player class
@@ -46,14 +70,11 @@ Enemy.prototype.render = function() {
 var player = function() {
     if (!this.x) {
         this.x = columnToPixel(2);
+        //use -10 modifier to adjust for characters' size
         this.y = rowToPixel(5) - 10;
     }
     this.sprite = 'images/char-cat-girl.png';
-//Use cat girl character to advance cause of gender equity (and also species equity)
-
     this.render = function() {
-//    console.log(ctx);
-//    console.log(this);
     console.log(Resources.get(player.sprite));
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
     console.log("player.render run");
@@ -90,21 +111,14 @@ player.prototype.handleInput = function(e){
             }
         }
     }*/
-  //  console.log("this.x = " + this.x);
-    console.log("this e = " + e);
     if (e == "left") {
         this.x = Math.max(0, (this.x - columnToPixel(1)));
-        console.log("with this e, this.x is now " + this.x);
-        console.log("player.y" + this.y);
     }
     if (e == "right") {
-        console.log("and now this e is equal to " + e);
         this.x = Math.min(columnToPixel(4), (this.x + columnToPixel(1)));
-        console.log("with this e, this.x is now " + this.x);
     }
     if (e == "up") {
         this.y = Math.max(-10, (this.y - rowToPixel(1)));
-        console.log("up adjustments made");
     }
     if (e == "down") {
         this.y = Math.min(rowToPixel(5) - 10, (this.y + rowToPixel(1)));
@@ -113,7 +127,36 @@ player.prototype.handleInput = function(e){
 
 player.prototype.update = function() {
     console.log("player.update run");
+    allEnemies.forEach(function(enemyBug) {
+        if (((player.x + 33) <= (enemyBug.x + 98)) && ((player.x + 50) >=
+            (enemyBug.x + 2)) && (player.y == (enemyBug.y +10))  ) {
+            console.log("player.y is " + player.y + " and enemyBug.y is " + enemyBug.y);
+            player.x = columnToPixel(2);
+            player.y = rowToPixel(5) - 10;
+        }
+    })
 };
+
+var gem = function() {
+    this.sprite = "images/gem-blue.png";
+    this.x = Math.random() * ctx.width;
+    this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) - 20;
+}
+
+gem.prototype.update = function() {
+    console.log("gem updated!");
+    //if found by player it disappears, scared is set to TRUE, gemPresent set to false,
+    // and scaredStart = Date.now();
+}
+
+gem.prototype.render = function() {
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+    if(gemPresent = False && Date.now() - gemCycleStart <= 2500) {
+        var Gem = new gem();
+        gemPresent = true;
+        var gemCycleStart = Date.now();
+    }
+}
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
@@ -126,14 +169,6 @@ if (!lastBugTime) {
     console.log("hello?");
     var lastBugTime = Date.now();
     console.log("lastBugTime =" + lastBugTime);
-} else {
-    console.log("lastBugTime was " + lastBugTime);
-    console.log("current time is" + Date.now());
-    if (Date.now() - lastBugTime >= (Math.random() * 1500) + 500) {
-        console.log("creating new bug!");
-        var bug = new Enemy();
-        console.log("next bug status: " + lastBugTime - Date.now() >= (Math.random() * 1.5) + 1.5);
-        }
 }
 
 if (!allEnemies) {
@@ -156,9 +191,3 @@ document.addEventListener('keyup', function(e) {
     };
     player.handleInput(allowedKeys[e.keyCode]);
 });
-
-//main();
-//console.log(allEnemies);
-//console.log(player.update);
-//init();
-//console.log("reached end of app.js");
