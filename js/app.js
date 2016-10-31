@@ -34,6 +34,13 @@ Enemy.prototype.update = function(dt) {
     // Multiply movement by the dt parameter
     // which will ensure the game runs at the same speed for
     // all computers.
+    if (((player.x + 33) <= (this.x + 98)) && ((player.x + 50) >=
+        (this.x + 2)) && (player.y == (this.y +10))  ) {
+        console.log("player.y is " + player.y + " and enemyBug.y is " + this.y);
+        player.x = columnToPixel(2);
+        player.y = rowToPixel(5) - 10;
+    }
+
     if (scared == false) {
         this.x = this.x + this.speed * dt;
     }
@@ -132,14 +139,14 @@ player.prototype.handleInput = function(e){
 
 player.prototype.update = function() {
     console.log("player.update run");
-    allEnemies.forEach(function(enemyBug) {
+   /* allEnemies.forEach(function(enemyBug) {
         if (((player.x + 33) <= (enemyBug.x + 98)) && ((player.x + 50) >=
             (enemyBug.x + 2)) && (player.y == (enemyBug.y +10))  ) {
             console.log("player.y is " + player.y + " and enemyBug.y is " + enemyBug.y);
             player.x = columnToPixel(2);
             player.y = rowToPixel(5) - 10;
         }
-    })
+    }) */
 };
 
 var gem = function() {
