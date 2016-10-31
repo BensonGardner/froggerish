@@ -45,6 +45,11 @@ Enemy.prototype.update = function(dt) {
         }
     }
     this.y = this.y;
+    if (this.x > 505) {
+        this.x = -101;
+        this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) - 20;
+        console.log("length of allEnemies is " + allEnemies.length);
+    }
     };
 
 // if we do have a Creature superclass, we can have the Render function stored at Creatures.prototype.render since it's the same.
@@ -54,7 +59,7 @@ Enemy.prototype.render = function() {
     // Generate another enemy if a suitable amount of time has passed.
     // This code creates more enemies than in the provided demo video, in order
     // to make a more challenging game.
-    if (Date.now() - lastBugTime >= (Math.random() * 1000) + 250) {
+    if ((Date.now() - lastBugTime >= (Math.random() * 1000) + 250) && (allEnemies.length < 10)) {
         console.log("creating new bug!");
         var newBug = new Enemy();
         lastBugTime = Date.now();
