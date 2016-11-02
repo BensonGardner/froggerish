@@ -11,8 +11,6 @@ function columnToPixel(column){
 
 // Variables we will need later
 
-var gemCycleStart = Date.now();
-var scared = false;
 var allEnemies = [];
 var lastBugTime;
 
@@ -28,30 +26,32 @@ var Enemy = function() {
     this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) - 20;
 };
 
+Enemy.scared = false;
+
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
 
 Enemy.prototype.update = function(dt) {
-    // Multiply movement by the dt parameter
-    // which will ensure the game runs at the same speed for
-    // all computers.
+    // Check for collisions between player and bugs
     if (((player.x + 33) <= (this.x + 98)) && ((player.x + 50) >=
         (this.x + 2)) && (player.y == (this.y +10))  ) {
         console.log("player.y is " + player.y + " and enemyBug.y is " + this.y);
         player.reset.call(player);
     }
-
-    if (scared == false) {
+    // Check to see if bugs have been "scared" by player powering up with a gem.
+    if (Enemy.scared == false) {
+        // Multiply movement by the dt parameter
+        // which will ensure the game runs at the same speed for
+        // all computers.
         this.x = this.x + this.speed * dt;
     }
-    if (scared == true) {
+    if (Enemy.scared == true) {
         if (this.x > player.x) {
             this.x = this.x + (this.speed * .67 * dt);
         } else {
             this.x = this.x - (this.speed * .67 * dt);
         }
     }
-    this.y = this.y;
     if (this.x > 505) {
         this.x = -101;
         this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) - 20;
@@ -147,31 +147,33 @@ var Gem = function() {
     this.sprite = "images/gem-blue.png";
 }
 
-//if found by player it disappears, scared is set to TRUE, gemPresent set to false,
-// and scaredStart = Date.now();
+Gem.cycleStart = Date.now();
+
+//if found by player it disappears, Enemy.scared is set to TRUE,
+// gemPresent set to false, and Enemy.scaredStart = Date.now();
 Gem.prototype.update = function() {
     // First check to see if player is touching gem ...
     if ((player.x > this.x - 33) && (player.x < this.x + 169) && (player.y = this.y + 10)) {
-        // ... and if so, make the bugs scared, hide gem, and restart gem cycle.
-        scared = true;
-        scaredStart = Date.now();
+        // ... and if so, make the bugs Enemy.scared, hide gem, and restart gem cycle.
+        Enemy.scared = true;
+        Enemy.scaredStart = Date.now();
         this.x = ctx.width + 1;
-        gemCycleStart = Date.now();
+        Gem.cycleStart = Date.now();
     } else {
         // If player isn't touching it, then check to see if it has been 5
         // seconds since gem appeared or disappeared.
-        if(Date.now() - gemCycleStart >= 5000) {
+        if(Date.now() - Gem.cycleStart >= 5000) {
             // If so, then check to see if gem is hidden to the right of the canvas
             if (this.x > ctx.width) {
                 // If it is hidden, make it visible by placing it randomly in rows of action
                 this.x = Math.random() * (ctx.width - 171);
                 this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) - 20;
                 // Restart the gemCycle.
-                gemCycleStart = Date.now();
+                Gem.cycleStart = Date.now();
             } else {
                 // If it isn't hidden to the right of the canvas, hide it and restart gemCycle.
                 this.x = ctx.width + 1;
-                gemCycleStart = Date.now();
+                Gem.cycleStart = Date.now();
             }
         // If it hasn't been 5 seconds since gem appeared or disappeared
         }
