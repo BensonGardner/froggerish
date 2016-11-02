@@ -9,11 +9,9 @@ function columnToPixel(column){
     return column * 101;
 }
 
-//start timer for intermittent appearance of gems
+// Variables we will need later
 
 var gemCycleStart = Date.now();
-
-// Other variables we will need later
 var scared = false;
 var allEnemies = [];
 var lastBugTime;
@@ -40,8 +38,7 @@ Enemy.prototype.update = function(dt) {
     if (((player.x + 33) <= (this.x + 98)) && ((player.x + 50) >=
         (this.x + 2)) && (player.y == (this.y +10))  ) {
         console.log("player.y is " + player.y + " and enemyBug.y is " + this.y);
-        player.x = columnToPixel(2);
-        player.y = rowToPixel(5) - 10;
+        player.reset.call(player);
     }
 
     if (scared == false) {
@@ -67,33 +64,24 @@ Enemy.prototype.update = function(dt) {
 Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
     // Generate another enemy if a suitable amount of time has passed.
-    // This code creates more enemies than in the provided demo video, in order
-    // to make a more challenging game.
+    // This code deliberately creates more enemies than in the provided demo video.
     if ((Date.now() - lastBugTime >= (Math.random() * 1000) + 250) && (allEnemies.length < 10)) {
         console.log("creating new bug!");
         var newBug = new Enemy();
         lastBugTime = Date.now();
         allEnemies.push(newBug);
-        console.log("next bug status: " + lastBugTime - Date.now() >= (Math.random() * 1.5) + 1.5);
     }
 };
 
-// Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
-
 var Player = function() {
     if (!this.x) {
-        this.x = columnToPixel(2);
-        //use -10 modifier to adjust for characters' size
-        this.y = rowToPixel(5) - 10;
+        this.reset();
     }
     this.sprite = 'images/char-cat-girl.png';
-    this.render = function() {
-    console.log(Resources.get(player.sprite));
+};
+
+Player.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-    console.log("player.render run");
-    };
 };
 
 Player.prototype.handleInput = function(e){
@@ -142,33 +130,57 @@ Player.prototype.handleInput = function(e){
 
 
 Player.prototype.update = function() {
-// reset game if player reaches the water
-   if (this.y == -10) {
-        this.x = columnToPixel(2);
-        this.y = rowToPixel(5) - 10;
+    // reset game if player reaches the water
+    if (this.y == -10) {
+        player.reset();
         Enemy.createFirstBug();
     }
 };
 
-var gem = function() {
+Player.prototype.reset = function() {
+    this.x = columnToPixel(2);
+    //use -10 modifier to adjust for characters' size
+    this.y = rowToPixel(5) - 10;
+}
+
+var Gem = function() {
     this.sprite = "images/gem-blue.png";
-    this.x = Math.random() * ctx.width;
-    this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) - 20;
 }
 
-gem.prototype.update = function() {
-    console.log("gem updated!");
-    //if found by player it disappears, scared is set to TRUE, gemPresent set to false,
-    // and scaredStart = Date.now();
-}
-
-gem.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-    if(gemPresent = False && Date.now() - gemCycleStart <= 2500) {
-        var Gem = new gem();
-        gemPresent = true;
-        var gemCycleStart = Date.now();
+//if found by player it disappears, scared is set to TRUE, gemPresent set to false,
+// and scaredStart = Date.now();
+Gem.prototype.update = function() {
+    // First check to see if player is touching gem ...
+    if ((player.x > this.x - 33) && (player.x < this.x + 169) && (player.y = this.y + 10)) {
+        // ... and if so, make the bugs scared, hide gem, and restart gem cycle.
+        scared = true;
+        scaredStart = Date.now();
+        this.x = ctx.width + 1;
+        gemCycleStart = Date.now();
+    } else {
+        // If player isn't touching it, then check to see if it has been 5
+        // seconds since gem appeared or disappeared.
+        if(Date.now() - gemCycleStart >= 5000) {
+            // If so, then check to see if gem is hidden to the right of the canvas
+            if (this.x > ctx.width) {
+                // If it is hidden, make it visible by placing it randomly in rows of action
+                this.x = Math.random() * (ctx.width - 171);
+                this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) - 20;
+                // Restart the gemCycle.
+                gemCycleStart = Date.now();
+            } else {
+                // If it isn't hidden to the right of the canvas, hide it and restart gemCycle.
+                this.x = ctx.width + 1;
+                gemCycleStart = Date.now();
+            }
+        // If it hasn't been 5 seconds since gem appeared or disappeared
+        }
     }
+    console.log("gem updated!");
+}
+
+Gem.prototype.render = function() {
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 }
 
 Enemy.createFirstBug = function() {
@@ -187,6 +199,8 @@ if (!lastBugTime) {
 }
 
 var player = new Player();
+
+var gem = new Gem();
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.

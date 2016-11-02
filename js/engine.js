@@ -73,7 +73,7 @@ var Engine = (function(global) {
     /* This function is called by main (our game loop) and itself calls all
      * of the functions which may need to update entities' data. Based on how
      * you implement your collision detection (when two entities occupy the
-     * same space, for instance when your character should die), you may find
+     * same space, for instance when your character  should die), you may find
      * the need to add an additional function call here. For now, we've left
      * it commented out - you may or may not want to implement this
      * functionality this way (you could just implement collision detection
@@ -157,6 +157,7 @@ var Engine = (function(global) {
         });
 
         player.render();
+        gem.render();
         console.log("end of renderEntities function");
     }
 
