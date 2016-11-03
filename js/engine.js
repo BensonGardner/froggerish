@@ -42,6 +42,7 @@ var Engine = (function(global) {
          */
         var now = Date.now(),
             dt = (now - lastTime) / 1000.0;
+            console.log("dt is " + dt);
 
         /* Call our update/render functions, pass along the time delta to
          * our update function since it may be used for smooth animation.
@@ -97,7 +98,7 @@ var Engine = (function(global) {
         });
         console.log(player);
         player.update();
-        gem.update();
+        gem.update(dt);
     }
 
     /* This function initially draws the "game level", it will then call
@@ -180,7 +181,8 @@ var Engine = (function(global) {
         'images/stone-block.png',
         'images/water-block.png',
         'images/grass-block.png',
-        'images/enemy-bug.png'
+        'images/enemy-bug.png',
+        'images/enemy-bug-scared.png'
     ]);
     Resources.onReady(init);
 

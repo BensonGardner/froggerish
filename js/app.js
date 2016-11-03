@@ -20,6 +20,8 @@ var Enemy = function() {
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
     this.sprite = 'images/enemy-bug.png';
+    // Set speed as pixels per second, because dt parameter is computed as
+    // the portion of a second which has passed between ticks.
     this.speed = columnToPixel((Math.random() * 3) + 2);
     this.x = -101;
     //use -20 modifier to adjust for enemies' size
@@ -60,16 +62,10 @@ Enemy.prototype.update = function(dt) {
         }
         if (Date.now() - Enemy.scaredStart > 4000) {
             Enemy.scared = false;
+            this.sprite = 'images/enemy-bug.png';
+        } else {
+        this.sprite = 'images/enemy-bug-scared.png';
         }
-// Maybe just do it in photoshop...        this.sprite =
-        /* latest error is tainted canvas
-        var bugImage = ctx.getImageData(this.x, this.y, 101, 171);
-        for (i = 0; i < bugImage.data.length; i+=4) {
-            bugImage.data[i] = 20;
-            bugImage.data[i] = 20;
-            bugImage.data[i] = 255;
-            bugImage.data[i] = 255;
-        }*/
     }
     // Recycle bugs who leave the screen to the right.
     if (this.x > 505) {
@@ -79,6 +75,7 @@ Enemy.prototype.update = function(dt) {
     // Keep bugs who flee when scared from getting too far away off to the left.
     if (this.x < -101) {
         this.x = -101;
+        this.sprite = 'images/enemy-bug.png';
     }
 };
 
@@ -148,7 +145,6 @@ Player.prototype.handleInput = function(e){
     }
 };
 
-
 Player.prototype.update = function() {
     // reset game if player reaches the water
     if (this.y == -10) {
@@ -174,7 +170,7 @@ var Gem = function() {
     Gem.cycleStart = Date.now() + 5000;
 }
 
-Gem.prototype.update = function() {
+Gem.prototype.update = function(dt) {
     // First check to see if player is touching gem.
     console.log("player coords are " + player.x + " and " + player.y);
     if ((player.x == this.x - 13) && (player.y == this.y - 17)) {
