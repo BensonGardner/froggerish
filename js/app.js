@@ -54,9 +54,9 @@ Enemy.prototype.update = function(dt) {
     // They also run away from the player.
     if (Enemy.scared == true) {
         if (this.x > player.x) {
-            this.x = this.x + (this.speed * .67 * dt);
+            this.x = this.x + (this.speed * 0.45 * dt);
         } else {
-            this.x = this.x - (this.speed * .67 * dt);
+            this.x = this.x - (this.speed * 0.45 * dt);
         }
         if (Date.now() - Enemy.scaredStart > 4000) {
             Enemy.scared = false;
@@ -154,6 +154,9 @@ Player.prototype.update = function() {
     if (this.y == -10) {
         player.reset();
         Enemy.createFirstBug();
+        Enemy.scared = false;
+        scaredStart = Date.now();
+        Gem.cycleStart = Date.now() + 5000;
     }
 };
 
@@ -168,7 +171,7 @@ var Gem = function() {
     this.x = 505;
     this.y = 0;
     console.log("gem created");
-    Gem.cycleStart = Date.now();
+    Gem.cycleStart = Date.now() + 5000;
 }
 
 Gem.prototype.update = function() {
@@ -181,7 +184,7 @@ Gem.prototype.update = function() {
         console.log("Bugs are SCAAARED");
         Enemy.scaredStart = Date.now();
         this.x = 505;
-        Gem.cycleStart = Date.now();
+        Gem.cycleStart = Date.now() + 5000;
     } else {
         // If player isn't touching it, then check to see if it has been 5
         // seconds since gem appeared or disappeared.
@@ -197,7 +200,7 @@ Gem.prototype.update = function() {
             } else {
                 // If it isn't hidden to the right of the canvas, hide it and restart gemCycle.
                 this.x = 505;
-                Gem.cycleStart = Date.now();
+                Gem.cycleStart = Date.now() + 5000;
             }
         // If it hasn't been 5 seconds since appearing or disappearing, no change.
         }
