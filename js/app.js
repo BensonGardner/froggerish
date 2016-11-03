@@ -173,10 +173,12 @@ var Gem = function() {
 
 Gem.prototype.update = function() {
     // First check to see if player is touching gem.
-    if ((player.x > this.x - 33) && (player.x < this.x + 169) && (player.y == this.y + 10)) {
+    console.log("player coords are " + player.x + " and " + player.y);
+    if ((player.x == this.x - 13) && (player.y == this.y - 17)) {
         // If touching gem, make the bugs scared, hide gem, restart gem cycle.
         // Note to self: might nt need boolean for scared. Could maybe use scaredStart + 3 seconds or undefined.
         Enemy.scared = true;
+        console.log("Bugs are SCAAARED");
         Enemy.scaredStart = Date.now();
         this.x = 505;
         Gem.cycleStart = Date.now();
@@ -187,8 +189,9 @@ Gem.prototype.update = function() {
             // If so, then check to see if gem is hidden to the right of the canvas
             if (this.x > 504) {
                 // If it is hidden, make it visible by placing it randomly in rows of action
-                this.x = columnToPixel(Math.round(Math.random() * 5)) * 0.75;
+                this.x = columnToPixel(Math.round(Math.random() * 4)) + 13;
                 this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) + 7;
+                console.log("Gem coordinates are " + this.x + " and " + this.y);
                 // Restart the gemCycle.
                 Gem.cycleStart = Date.now();
             } else {
