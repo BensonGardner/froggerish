@@ -1,5 +1,5 @@
 
-//create conversions for rows and columns to pixel values
+// Conversions for rows and columns to pixel values.
 
 function rowToPixel(row){
     return (row * 83);
@@ -9,9 +9,10 @@ function columnToPixel(column){
     return column * 101;
 }
 
-// Variables we will need later
-
+// All bugs will be pushed into this array
 var allEnemies = [];
+
+// We will use this variable to govern how quickly bugs appear.
 var lastBugTime;
 
 // Enemies our player must avoid
@@ -28,6 +29,7 @@ var Enemy = function() {
     this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) - 20;
 };
 
+// We will need this later.
 Enemy.scared = false;
 
 // Update the enemy's position, required method for game
@@ -37,22 +39,23 @@ Enemy.prototype.update = function(dt) {
     // Check for collisions between player and bugs
     if (((player.x + 33) <= (this.x + 98)) && ((player.x + 50) >=
         (this.x + 2)) && (player.y == (this.y +10))) {
-        // provided the bugs aren't scared, send player back to home.
+        // Provided the bugs aren't "scared" into powerlessness
+        // by player powering up with a gem, send player back to home.
         if (Enemy.scared == false) {
             player.reset.call(player);
+        // But if the bugs are scared, send them way off screen.
         } else {
-            // but if the bugs are scared, send them away off screen.
             this.x = -300;
         }
     }
-    // Check to see if bugs have been "scared" by player powering up with a gem.
+    // Check to see if bugs have been "scared.""
     if (Enemy.scared == false) {
         // If not scared, multiply movement by the dt parameter
         // which will ensure the game runs at the same speed for
         // all computers.
         this.x = this.x + this.speed * dt;
     }
-    // But scared bugs move more slowly and change to a different color.
+    // Scared bugs move more slowly and change to a different color.
     // They also run away from the player.
     if (Enemy.scared == true) {
         if (this.x > player.x) {
@@ -73,18 +76,18 @@ Enemy.prototype.update = function(dt) {
         this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) - 20;
     }
     // Keep bugs who flee when scared from getting too far away off to the left.
+    // Change color back to normal for when they re-enter.
     if (this.x < -101) {
         this.x = -101;
         this.sprite = 'images/enemy-bug.png';
     }
 };
 
-// if we do have a Creature superclass, we can have the Render function stored at Creatures.prototype.render since it's the same.
-// Draw the enemy on the screen, required method for game
 Enemy.prototype.render = function() {
+    // Use resources.js functionality to load the images.
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
     // Generate another enemy if a suitable amount of time has passed.
-    // This code deliberately creates more enemies than in the provided demo video.
+    // (This code deliberately creates more enemies than in the provided demo.)
     if ((Date.now() - lastBugTime >= (Math.random() * 1000) + 250) && (allEnemies.length < 10)) {
         var newBug = new Enemy();
         lastBugTime = Date.now();
@@ -102,35 +105,6 @@ Player.prototype.render = function() {
 };
 
 Player.prototype.handleInput = function(e){
-// takes keystroke values from the eventlistener that has been provided
-// and translates them into motion for the character (well, it changes the x and y values, so that the render
-// function can place the character correctly.
-/*    var motion = {
-        "left" : [Math.max(0, (this.x - columnToPixel(1))), this.y],
-        "right" : [Math.min(columnToPixel(4), (this.x + columnToPixel(1))), this.y],
-        "up" : [this.x, Math.max(0, (this.y - rowToPixel(1)))],
-        "down" : [this.x, Math.min(rowToPixel(5), (this.y + rowToPixel(1)))]
-//            "left" : function() {this.x = Math.max(0, (this.x - columnToPixel(1)))},
-//            "right" : function() {this.x = this.x + columnToPixel(1)},
-    };
-    console.log("motion.left and right are " + motion.left + ", " +
-         motion.right);
- //   console.log("motion.left[0] is" + motion.left[0]);
-  //  console.log(e + " is e. " + motion.e + " is motion.e");
-
-        //if (e = "left") {this.x = this.x - columnToPixel(1)};
-//        console.log("motion right is" + motion.right + "motion left is" + motion.left);
-  //      console.log("motion.e is" + motion.e);
-    for (var key in motion) {
-        if (motion.hasOwnProperty(key)) {
-          if (motion.key = e) {
-                console.log("conditions met");
-                console.log("motion.key is " + motion.key[0] + " and " + motion.key[1]);
-                this.x = motion.key[0];
-                this.y = motion.key[1];
-            }
-        }
-    }*/
     if (e == "left") {
         this.x = Math.max(0, (this.x - columnToPixel(1)));
     }
@@ -160,65 +134,66 @@ Player.prototype.reset = function() {
     this.x = columnToPixel(2);
     //use -10 modifier to adjust for characters' size
     this.y = rowToPixel(5) - 10;
-}
+};
 
 var Gem = function() {
     this.sprite = "images/gem-blue.png";
+    // starting coordinates are invisible - off-screen.
     this.x = 505;
     this.y = 0;
-    console.log("gem created");
+    // The Gem cycle creates a gem every 10 seconds; it lasts for 5 seconds.
+    // By adding 5 seconds when gem disappears, and adding nothing when it's
+    // visible, the later check for Gem.cycleStart + 5000 will check for the
+    // desired values.
     Gem.cycleStart = Date.now() + 5000;
-}
+};
 
-Gem.prototype.update = function(dt) {
+Gem.prototype.update = function() {
     // First check to see if player is touching gem.
-    console.log("player coords are " + player.x + " and " + player.y);
+    // The sprites vary in size, hence the adjustments of -13 and -17.
     if ((player.x == this.x - 13) && (player.y == this.y - 17)) {
         // If touching gem, make the bugs scared, hide gem, restart gem cycle.
-        // Note to self: might nt need boolean for scared. Could maybe use scaredStart + 3 seconds or undefined.
         Enemy.scared = true;
-        console.log("Bugs are SCAAARED");
         Enemy.scaredStart = Date.now();
         this.x = 505;
         Gem.cycleStart = Date.now() + 5000;
     } else {
-        // If player isn't touching it, then check to see if it has been 5
-        // seconds since gem appeared or disappeared.
+        // If player isn't touching it, check to see if it has been 5
+        // seconds since gem appeared (or 10 sec. since it disappeared).
         if(Date.now() - Gem.cycleStart >= 5000) {
-            // If so, then check to see if gem is hidden to the right of the canvas
+            // If so, then check to see if gem is hidden to the right of the
+            // canvas
             if (this.x > 504) {
-                // If it is hidden, make it visible by placing it randomly in rows of action
+                // If it is hidden, make it visible by placing it randomly in
+                // rows of action
                 this.x = columnToPixel(Math.round(Math.random() * 4)) + 13;
                 this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) + 7;
                 console.log("Gem coordinates are " + this.x + " and " + this.y);
                 // Restart the gemCycle.
                 Gem.cycleStart = Date.now();
             } else {
-                // If it isn't hidden to the right of the canvas, hide it and restart gemCycle.
+                // If it isn't hidden to the right of the canvas, hide it and
+                // restart gemCycle.
                 this.x = 505;
                 Gem.cycleStart = Date.now() + 5000;
             }
         // If it hasn't been 5 seconds since appearing or disappearing, no change.
         }
     }
-    console.log("gem updated!");
-}
+};
 
 Gem.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y, 75, 127);
-}
+};
 
 Enemy.createFirstBug = function() {
+    allEnemies = [];
     var bug = new Enemy();
     lastBugTime = Date.now();
-    allEnemies = [];
     allEnemies.push(bug);
-}
+};
 
-// Now instantiate your objects.
-// Place all enemy objects in an array called allEnemies
-// Place the player object in a variable called player
-
+//If a bug has not yet appeared, create the first one.
 if (!lastBugTime) {
     Enemy.createFirstBug();
 }
@@ -228,7 +203,7 @@ var player = new Player();
 var gem = new Gem();
 
 // This listens for key presses and sends the keys to your
-// Player.handleInput() method. You don't need to modify this.
+// Player.handleInput() method. Provided by Udacity.
 document.addEventListener('keyup', function(e) {
     var allowedKeys = {
         37: 'left',
