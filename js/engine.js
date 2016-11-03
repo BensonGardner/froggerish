@@ -97,7 +97,7 @@ var Engine = (function(global) {
         });
         console.log(player);
         player.update();
-//        Gem.update();
+        gem.update();
     }
 
     /* This function initially draws the "game level", it will then call

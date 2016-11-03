@@ -34,30 +34,53 @@ Enemy.scared = false;
 Enemy.prototype.update = function(dt) {
     // Check for collisions between player and bugs
     if (((player.x + 33) <= (this.x + 98)) && ((player.x + 50) >=
-        (this.x + 2)) && (player.y == (this.y +10))  ) {
-        console.log("player.y is " + player.y + " and enemyBug.y is " + this.y);
-        player.reset.call(player);
+        (this.x + 2)) && (player.y == (this.y +10))) {
+        // provided the bugs aren't scared, send player back to home.
+        if (Enemy.scared == false) {
+            player.reset.call(player);
+        } else {
+            // but if the bugs are scared, send them away off screen.
+            this.x = -300;
+        }
     }
     // Check to see if bugs have been "scared" by player powering up with a gem.
     if (Enemy.scared == false) {
-        // Multiply movement by the dt parameter
+        // If not scared, multiply movement by the dt parameter
         // which will ensure the game runs at the same speed for
         // all computers.
         this.x = this.x + this.speed * dt;
     }
+    // But scared bugs move more slowly and change to a different color.
+    // They also run away from the player.
     if (Enemy.scared == true) {
         if (this.x > player.x) {
             this.x = this.x + (this.speed * .67 * dt);
         } else {
             this.x = this.x - (this.speed * .67 * dt);
         }
+        if (Date.now() - Enemy.scaredStart > 4000) {
+            Enemy.scared = false;
+        }
+// Maybe just do it in photoshop...        this.sprite =
+        /* latest error is tainted canvas
+        var bugImage = ctx.getImageData(this.x, this.y, 101, 171);
+        for (i = 0; i < bugImage.data.length; i+=4) {
+            bugImage.data[i] = 20;
+            bugImage.data[i] = 20;
+            bugImage.data[i] = 255;
+            bugImage.data[i] = 255;
+        }*/
     }
+    // Recycle bugs who leave the screen to the right.
     if (this.x > 505) {
         this.x = -101;
         this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) - 20;
-        console.log("length of allEnemies is " + allEnemies.length);
     }
-    };
+    // Keep bugs who flee when scared from getting too far away off to the left.
+    if (this.x < -101) {
+        this.x = -101;
+    }
+};
 
 // if we do have a Creature superclass, we can have the Render function stored at Creatures.prototype.render since it's the same.
 // Draw the enemy on the screen, required method for game
@@ -66,7 +89,6 @@ Enemy.prototype.render = function() {
     // Generate another enemy if a suitable amount of time has passed.
     // This code deliberately creates more enemies than in the provided demo video.
     if ((Date.now() - lastBugTime >= (Math.random() * 1000) + 250) && (allEnemies.length < 10)) {
-        console.log("creating new bug!");
         var newBug = new Enemy();
         lastBugTime = Date.now();
         allEnemies.push(newBug);
@@ -74,9 +96,7 @@ Enemy.prototype.render = function() {
 };
 
 var Player = function() {
-    if (!this.x) {
-        this.reset();
-    }
+    this.reset();
     this.sprite = 'images/char-cat-girl.png';
 };
 
@@ -145,44 +165,45 @@ Player.prototype.reset = function() {
 
 var Gem = function() {
     this.sprite = "images/gem-blue.png";
+    this.x = 505;
+    this.y = 0;
+    console.log("gem created");
+    Gem.cycleStart = Date.now();
 }
 
-Gem.cycleStart = Date.now();
-
-//if found by player it disappears, Enemy.scared is set to TRUE,
-// gemPresent set to false, and Enemy.scaredStart = Date.now();
 Gem.prototype.update = function() {
-    // First check to see if player is touching gem ...
-    if ((player.x > this.x - 33) && (player.x < this.x + 169) && (player.y = this.y + 10)) {
-        // ... and if so, make the bugs Enemy.scared, hide gem, and restart gem cycle.
+    // First check to see if player is touching gem.
+    if ((player.x > this.x - 33) && (player.x < this.x + 169) && (player.y == this.y + 10)) {
+        // If touching gem, make the bugs scared, hide gem, restart gem cycle.
+        // Note to self: might nt need boolean for scared. Could maybe use scaredStart + 3 seconds or undefined.
         Enemy.scared = true;
         Enemy.scaredStart = Date.now();
-        this.x = ctx.width + 1;
+        this.x = 505;
         Gem.cycleStart = Date.now();
     } else {
         // If player isn't touching it, then check to see if it has been 5
         // seconds since gem appeared or disappeared.
         if(Date.now() - Gem.cycleStart >= 5000) {
             // If so, then check to see if gem is hidden to the right of the canvas
-            if (this.x > ctx.width) {
+            if (this.x > 504) {
                 // If it is hidden, make it visible by placing it randomly in rows of action
-                this.x = Math.random() * (ctx.width - 171);
-                this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) - 20;
+                this.x = columnToPixel(Math.round(Math.random() * 5)) * 0.75;
+                this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) + 7;
                 // Restart the gemCycle.
                 Gem.cycleStart = Date.now();
             } else {
                 // If it isn't hidden to the right of the canvas, hide it and restart gemCycle.
-                this.x = ctx.width + 1;
+                this.x = 505;
                 Gem.cycleStart = Date.now();
             }
-        // If it hasn't been 5 seconds since gem appeared or disappeared
+        // If it hasn't been 5 seconds since appearing or disappearing, no change.
         }
     }
     console.log("gem updated!");
 }
 
 Gem.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y, 75, 127);
 }
 
 Enemy.createFirstBug = function() {
@@ -207,7 +228,6 @@ var gem = new Gem();
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
 document.addEventListener('keyup', function(e) {
-    console.log("as far as the eventlistener is concerned, this e is" + e);
     var allowedKeys = {
         37: 'left',
         38: 'up',
