@@ -9,8 +9,10 @@ function columnToPixel(column){
     return column * 101;
 }
 
-// All bugs will be pushed into this array
-var allEnemies = [];
+// All bugs will be pushed into the allEnemies array. The modifier increases
+// for extra challenge if game is won.
+var allEnemies = [],
+    speedModifier = 2;
 
 // We will use this variable to govern how quickly bugs appear.
 var lastBugTime;
@@ -22,7 +24,7 @@ var Enemy = function() {
     // Set speed in pixels per second. Later, it will interact with the
     // dt parameter, a variable computed as the portion of a second which has
     // passed between ticks.
-    this.speed = columnToPixel((Math.random() * 3) + 2);
+    this.speed = columnToPixel((Math.random() * 3) + speedModifier);
     Enemy.start.call(this);
 };
 
@@ -44,34 +46,41 @@ Enemy.scared = false;
 // Parameter: dt, a time delta -- the portion of a second which passed
 // between ticks
 Enemy.prototype.update = function(dt) {
+
     // Check for collisions between player and bugs
     if (((player.x + 33) <= (this.x + 98)) && ((player.x + 50) >=
         (this.x + 2)) && (player.y == (this.y +10))) {
+
         // Provided the bug isn't "scared" into powerlessness
-        // by player powering up with a gem, colliding sends player to start.
-        if (Enemy.scared == false) {
+        // by player powering up with a gem, colliding restarts game.
+        if (Enemy.scared === false) {
             player.reset.call(player);
-        // But if the bugs is scared, player wins: recyle bug.
+            Enemy.createFirstBug();
+
+        // But if the bug is scared, player wins: recyle bug.
         } else {
             Enemy.start.call(this);
         }
     }
+
     // If no collision, then update position. First check if bugs are "scared."
-    if (Enemy.scared == false) {
+    if (Enemy.scared === false) {
+
         // If not scared, simply multiply movement by the dt parameter
         // which will ensure the game runs at the same speed for
         // all computers.
         this.x = this.x + this.speed * dt;
-    }
+    } else {
+
     // Scared bugs move more slowly and change to a different color.
     // They also run away from the player.
-    if (Enemy.scared == true) {
         if (this.x > player.x) {
             this.x = this.x + (this.speed * 0.45 * dt);
         } else {
             this.x = this.x - (this.speed * 0.45 * dt);
         }
     }
+
     // Next two lines: 1) recycle bugs after they leave the screen
     // to the right, to save memory, by setting them to a starting position;
     // and 2) prevent scared bugs from fleeing too far off to the left. In
@@ -82,16 +91,19 @@ Enemy.prototype.update = function(dt) {
 };
 
 Enemy.prototype.render = function() {
+
         // For 4 seconds after scaredStart, use scared version of image.
         // After 4 seconds, revert to original image and set scared to false.
-        if (Enemy.scared == true && Date.now() - Enemy.scaredStart < 4000) {
+        if (Enemy.scared === true && Date.now() - Enemy.scaredStart < 4000) {
             this.sprite = 'images/enemy-bug-scared.png';
         } else {
             this.sprite = 'images/enemy-bug.png';
             Enemy.scared = false;
         }
+
     // Use resources.js functionality to load the images.
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+
     // Generate another enemy if a suitable amount of time has passed.
     // (This code deliberately creates more enemies than in the provided demo.)
     if ((Date.now() - lastBugTime >= (Math.random() * 1000) + 250) &&
@@ -131,11 +143,11 @@ Player.prototype.handleInput = function(e){
 };
 
 Player.prototype.update = function() {
-    // reset game if player reaches the water
+    // restart game at a harder level if player reaches the water
     if (this.y == -10) {
         player.reset();
         Enemy.createFirstBug();
-        Gem.cycleStart = Date.now() + 5000;
+        speedModifier += 0.6;
     }
 };
 

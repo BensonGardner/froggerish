@@ -15,7 +15,6 @@
  */
 
 var Engine = (function(global) {
-    console.log("engine begun");
     /* Predefine the variables we'll be using within this scope,
      * create the canvas element, grab the 2D context for that canvas
      * set the canvas elements height/width and add it to the DOM.
@@ -42,7 +41,6 @@ var Engine = (function(global) {
          */
         var now = Date.now(),
             dt = (now - lastTime) / 1000.0;
-            console.log("dt is " + dt);
 
         /* Call our update/render functions, pass along the time delta to
          * our update function since it may be used for smooth animation.
@@ -81,8 +79,7 @@ var Engine = (function(global) {
      * on the entities themselves within your app.js file).
      */
     function update(dt) {
-        updateEntities(dt);
-        // checkCollisions();
+            updateEntities(dt);
     }
 
     /* This is called by the update function and loops through all of the
@@ -96,9 +93,8 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
-        console.log(player);
-        player.update();
         gem.update(dt);
+        player.update();
     }
 
     /* This function initially draws the "game level", it will then call
@@ -108,11 +104,11 @@ var Engine = (function(global) {
      * they are just drawing the entire screen over and over.
      */
     function render() {
-        console.log("render begun")
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
-        var rowImages = [
+
+            var rowImages = [
                 'images/water-block.png',   // Top row is water
                 'images/stone-block.png',   // Row 1 of 3 of stone
                 'images/stone-block.png',   // Row 2 of 3 of stone
@@ -142,7 +138,6 @@ var Engine = (function(global) {
         }
 
         renderEntities();
-        console.log("end of render function");
     }
 
     /* This function is called by the render function and is called on each game
@@ -156,10 +151,8 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.render();
         });
-
         player.render();
         gem.render();
-        console.log("end of renderEntities function");
     }
 
     /* This function does nothing but it could have been a good place to
