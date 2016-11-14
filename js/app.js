@@ -16,16 +16,24 @@ var allEnemies = [];
 var lastBugTime;
 
 // Enemies our player must avoid
-
 var Enemy = function() {
+    lastBugTime = Date.now();
+    allEnemies.push(this);
+    // Set speed in pixels per second. Later, it will interact with the
+    // dt parameter, a variable computed as the portion of a second which has
+    // passed between ticks.
+    this.speed = columnToPixel((Math.random() * 3) + 2);
+    Enemy.start.call(this);
+};
+
+Enemy.start = function() {
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
     this.sprite = 'images/enemy-bug.png';
-    // Set speed as pixels per second, because dt parameter is computed as
-    // the portion of a second which has passed between ticks.
-    this.speed = columnToPixel((Math.random() * 3) + 2);
+    // Set starting spot of each enemy: to the left of the visible
+    // canvas and in a randomly chosen row of stones. The -20 modifier
+    // adjusts for enemies' sprite size.
     this.x = -101;
-    //use -20 modifier to adjust for enemies' size
     this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) - 20;
 };
 
@@ -33,24 +41,24 @@ var Enemy = function() {
 Enemy.scared = false;
 
 // Update the enemy's position, required method for game
-// Parameter: dt, a time delta between ticks
-
+// Parameter: dt, a time delta -- the portion of a second which passed
+// between ticks
 Enemy.prototype.update = function(dt) {
     // Check for collisions between player and bugs
     if (((player.x + 33) <= (this.x + 98)) && ((player.x + 50) >=
         (this.x + 2)) && (player.y == (this.y +10))) {
-        // Provided the bugs aren't "scared" into powerlessness
-        // by player powering up with a gem, send player back to home.
+        // Provided the bug isn't "scared" into powerlessness
+        // by player powering up with a gem, colliding sends player to start.
         if (Enemy.scared == false) {
             player.reset.call(player);
-        // But if the bugs are scared, send them way off screen.
+        // But if the bugs is scared, player wins: recyle bug.
         } else {
-            this.x = -300;
+            Enemy.start.call(this);
         }
     }
-    // Check to see if bugs have been "scared.""
+    // If no collision, then update position. First check if bugs are "scared."
     if (Enemy.scared == false) {
-        // If not scared, multiply movement by the dt parameter
+        // If not scared, simply multiply movement by the dt parameter
         // which will ensure the game runs at the same speed for
         // all computers.
         this.x = this.x + this.speed * dt;
@@ -63,36 +71,39 @@ Enemy.prototype.update = function(dt) {
         } else {
             this.x = this.x - (this.speed * 0.45 * dt);
         }
-        if (Date.now() - Enemy.scaredStart > 4000) {
-            Enemy.scared = false;
-            this.sprite = 'images/enemy-bug.png';
-        } else {
-        this.sprite = 'images/enemy-bug-scared.png';
-        }
     }
-    // Recycle bugs who leave the screen to the right.
-    if (this.x > 505) {
-        this.x = -101;
-        this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) - 20;
-    }
-    // Keep bugs who flee when scared from getting too far away off to the left.
-    // Change color back to normal for when they re-enter.
-    if (this.x < -101) {
-        this.x = -101;
-        this.sprite = 'images/enemy-bug.png';
+    // Next two lines: 1) recycle bugs after they leave the screen
+    // to the right, to save memory, by setting them to a starting position;
+    // and 2) prevent scared bugs from fleeing too far off to the left. In
+    // latter case, they need the color returned to normal for when they re-enter.
+    if (this.x > 505 || this.x < -101) {
+        Enemy.start.call(this);
     }
 };
 
 Enemy.prototype.render = function() {
+        // For 4 seconds after scaredStart, use scared version of image.
+        // After 4 seconds, revert to original image and set scared to false.
+        if (Enemy.scared == true && Date.now() - Enemy.scaredStart < 4000) {
+            this.sprite = 'images/enemy-bug-scared.png';
+        } else {
+            this.sprite = 'images/enemy-bug.png';
+            Enemy.scared = false;
+        }
     // Use resources.js functionality to load the images.
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
     // Generate another enemy if a suitable amount of time has passed.
     // (This code deliberately creates more enemies than in the provided demo.)
-    if ((Date.now() - lastBugTime >= (Math.random() * 1000) + 250) && (allEnemies.length < 10)) {
+    if ((Date.now() - lastBugTime >= (Math.random() * 1000) + 250) &&
+        (allEnemies.length < 10)) {
         var newBug = new Enemy();
-        lastBugTime = Date.now();
-        allEnemies.push(newBug);
     }
+};
+
+Enemy.createFirstBug = function() {
+    allEnemies = [];
+    Enemy.scared = false;
+    var bug = new Enemy();
 };
 
 var Player = function() {
@@ -124,33 +135,32 @@ Player.prototype.update = function() {
     if (this.y == -10) {
         player.reset();
         Enemy.createFirstBug();
-        Enemy.scared = false;
-        scaredStart = Date.now();
         Gem.cycleStart = Date.now() + 5000;
     }
 };
 
 Player.prototype.reset = function() {
     this.x = columnToPixel(2);
-    //use -10 modifier to adjust for characters' size
+    // use -10 modifier to adjust for characters' size
     this.y = rowToPixel(5) - 10;
 };
 
+// Create a gem class.
 var Gem = function() {
     this.sprite = "images/gem-blue.png";
-    // starting coordinates are invisible - off-screen.
+    // starting coordinates are off-screen.
     this.x = 505;
     this.y = 0;
     // The Gem cycle creates a gem every 10 seconds; it lasts for 5 seconds.
-    // By adding 5 seconds when gem disappears, and adding nothing when it's
-    // visible, the later check for Gem.cycleStart + 5000 will check for the
-    // desired values.
+    // By setting Gem.cycleStart to Date.now() + 5 seconds when gem disappears,
+    // and to Date.now() plus nothing when it's visible, our later check for
+    // Gem.cycleStart + 5000 will do what we want.
     Gem.cycleStart = Date.now() + 5000;
 };
 
 Gem.prototype.update = function() {
     // First check to see if player is touching gem.
-    // The sprites vary in size, hence the adjustments of -13 and -17.
+    // The adjustments of -13 and -17 account for the different size of the two.
     if ((player.x == this.x - 13) && (player.y == this.y - 17)) {
         // If touching gem, make the bugs scared, hide gem, restart gem cycle.
         Enemy.scared = true;
@@ -158,7 +168,7 @@ Gem.prototype.update = function() {
         this.x = 505;
         Gem.cycleStart = Date.now() + 5000;
     } else {
-        // If player isn't touching it, check to see if it has been 5
+        // If player isn't touching gem, check to see if it has been 5
         // seconds since gem appeared (or 10 sec. since it disappeared).
         if(Date.now() - Gem.cycleStart >= 5000) {
             // If so, then check to see if gem is hidden to the right of the
@@ -168,12 +178,11 @@ Gem.prototype.update = function() {
                 // rows of action
                 this.x = columnToPixel(Math.round(Math.random() * 4)) + 13;
                 this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) + 7;
-                console.log("Gem coordinates are " + this.x + " and " + this.y);
                 // Restart the gemCycle.
                 Gem.cycleStart = Date.now();
             } else {
                 // If it isn't hidden to the right of the canvas, hide it and
-                // restart gemCycle.
+                // restart gemCycle, adding 5 seconds delay.
                 this.x = 505;
                 Gem.cycleStart = Date.now() + 5000;
             }
@@ -186,14 +195,9 @@ Gem.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y, 75, 127);
 };
 
-Enemy.createFirstBug = function() {
-    allEnemies = [];
-    var bug = new Enemy();
-    lastBugTime = Date.now();
-    allEnemies.push(bug);
-};
+// Instantiation time!
 
-//If a bug has not yet appeared, create the first one.
+// If a bug has not yet appeared, create the first one.
 if (!lastBugTime) {
     Enemy.createFirstBug();
 }
