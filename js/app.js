@@ -1,6 +1,10 @@
+/* This app.js file contains the code that sets up how the Player, Enemy, and
+Gem classes will run in the game, what happens when the player collides with
+an enemy or wins the game, etc.
+
+Code written by Benson Gardner for Classic Arcade Game Clone Project. */
 
 // Conversions for rows and columns to pixel values.
-
 function rowToPixel(row){
     return (row * 83);
 }
@@ -145,7 +149,7 @@ Player.prototype.handleInput = function(e){
 Player.prototype.update = function() {
     // restart game at a harder level if player reaches the water
     if (this.y == -10) {
-        player.reset();
+        this.reset();
         Enemy.createFirstBug();
         speedModifier += 0.6;
     }
