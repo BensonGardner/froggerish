@@ -5,13 +5,16 @@ an enemy or wins the game, etc.
 Code written by Benson Gardner for Classic Arcade Game Clone Project. */
 
 // Conversions for rows and columns to pixel values.
-function rowToPixel(row){
+
+'use strict';
+
+/*function rowToPixel(row){
     return (row * 83);
 }
 
 function columnToPixel(column){
     return column * 101;
-}
+}*/
 
 // All bugs will be pushed into the allEnemies array. The modifier increases
 // for extra challenge if game is won.
@@ -28,7 +31,7 @@ var Enemy = function() {
     // Set speed in pixels per second. Later, it will interact with the
     // dt parameter, a variable computed as the portion of a second which has
     // passed between ticks.
-    this.speed = columnToPixel((Math.random() * 3) + speedModifier);
+    this.speed = (101 * (Math.random() * 3) + speedModifier);
     Enemy.start.call(this);
 };
 
@@ -40,7 +43,7 @@ Enemy.start = function() {
     // canvas and in a randomly chosen row of stones. The -20 modifier
     // adjusts for enemies' sprite size.
     this.x = -101;
-    this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) - 20;
+    this.y = (((Math.round(Math.random() * 2)) + 1) * 83) - 20;
 };
 
 // We will need this later.
@@ -133,16 +136,16 @@ Player.prototype.render = function() {
 
 Player.prototype.handleInput = function(e){
     if (e == "left") {
-        this.x = Math.max(0, (this.x - columnToPixel(1)));
+        this.x = Math.max(0, (this.x - 101));
     }
     if (e == "right") {
-        this.x = Math.min(columnToPixel(4), (this.x + columnToPixel(1)));
+        this.x = Math.min(101 * 4, (this.x + 101));
     }
     if (e == "up") {
-        this.y = Math.max(-10, (this.y - rowToPixel(1)));
+        this.y = Math.max(-10, (this.y - 83));
     }
     if (e == "down") {
-        this.y = Math.min(rowToPixel(5) - 10, (this.y + rowToPixel(1)));
+        this.y = Math.min((83 * 5) - 10, (this.y + 83));
     }
 };
 
@@ -156,9 +159,9 @@ Player.prototype.update = function() {
 };
 
 Player.prototype.reset = function() {
-    this.x = columnToPixel(2);
+    this.x = 101 * 2;
     // use -10 modifier to adjust for characters' size
-    this.y = rowToPixel(5) - 10;
+    this.y = (83 * 5) - 10;
 };
 
 // Create a gem class.
@@ -192,8 +195,8 @@ Gem.prototype.update = function() {
             if (this.x > 504) {
                 // If it is hidden, make it visible by placing it randomly in
                 // rows of action
-                this.x = columnToPixel(Math.round(Math.random() * 4)) + 13;
-                this.y = rowToPixel(((Math.round(Math.random() * 2)) + 1)) + 7;
+                this.x = (101 * Math.round(Math.random() * 4)) + 13;
+                this.y = (83 * ((Math.round(Math.random() * 2)) + 1)) + 7;
                 // Restart the gemCycle.
                 Gem.cycleStart = Date.now();
             } else {

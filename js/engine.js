@@ -168,7 +168,6 @@ var Engine = (function(global) {
      * all of these images are properly loaded our game will start.
      */
     Resources.load([
-        'images/char-boy.png',
         'images/char-cat-girl.png',
         'images/gem-blue.png',
         'images/stone-block.png',
