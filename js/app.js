@@ -31,7 +31,7 @@ var Enemy = function() {
     // Set speed in pixels per second. Later, it will interact with the
     // dt parameter, a variable computed as the portion of a second which has
     // passed between ticks.
-    this.speed = (101 * (Math.random() * 3) + speedModifier);
+    this.speed = (101 * ((Math.random() * 3) + speedModifier));
     Enemy.start.call(this);
 };
 
