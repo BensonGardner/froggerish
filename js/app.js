@@ -4,33 +4,22 @@ an enemy or wins the game, etc.
 
 Code written by Benson Gardner for Classic Arcade Game Clone Project. */
 
-// Conversions for rows and columns to pixel values.
-
 'use strict';
 
-/*function rowToPixel(row){
-    return (row * 83);
-}
-
-function columnToPixel(column){
-    return column * 101;
-}*/
-
 // All bugs will be pushed into the allEnemies array. The modifier increases
-// for extra challenge if game is won.
+// for extra challenge if game is won. lastBugTime governs how quickly bugs
+// appear.
 var allEnemies = [],
-    speedModifier = 2;
-
-// We will use this variable to govern how quickly bugs appear.
-var lastBugTime;
+    speedModifier = 2,
+    lastBugTime;
 
 // Enemies our player must avoid
 var Enemy = function() {
     lastBugTime = Date.now();
     allEnemies.push(this);
-    // Set speed in pixels per second. Later, it will interact with the
-    // dt parameter, a variable computed as the portion of a second which has
-    // passed between ticks.
+    // Set speed in pixels per second (101 is the column width). Later, it
+    // will interact with the dt parameter, a variable computed as the portion
+    // of a second which has passed between ticks.
     this.speed = (101 * ((Math.random() * 3) + speedModifier));
     Enemy.start.call(this);
 };
@@ -168,7 +157,7 @@ Player.prototype.reset = function() {
 var Gem = function() {
     this.sprite = "images/gem-blue.png";
     // starting coordinates are off-screen.
-    this.x = 505;
+    this.x = -101;
     this.y = 0;
     // The Gem cycle creates a gem every 10 seconds; it lasts for 5 seconds.
     // By setting Gem.cycleStart to Date.now() + 5 seconds when gem disappears,
@@ -184,7 +173,7 @@ Gem.prototype.update = function() {
         // If touching gem, make the bugs scared, hide gem, restart gem cycle.
         Enemy.scared = true;
         Enemy.scaredStart = Date.now();
-        this.x = 505;
+        this.x = -101;
         Gem.cycleStart = Date.now() + 5000;
     } else {
         // If player isn't touching gem, check to see if it has been 5
@@ -192,7 +181,7 @@ Gem.prototype.update = function() {
         if(Date.now() - Gem.cycleStart >= 5000) {
             // If so, then check to see if gem is hidden to the right of the
             // canvas
-            if (this.x > 504) {
+            if (this.x == -101) {
                 // If it is hidden, make it visible by placing it randomly in
                 // rows of action
                 this.x = (101 * Math.round(Math.random() * 4)) + 13;
@@ -202,7 +191,7 @@ Gem.prototype.update = function() {
             } else {
                 // If it isn't hidden to the right of the canvas, hide it and
                 // restart gemCycle, adding 5 seconds delay.
-                this.x = 505;
+                this.x = -101;
                 Gem.cycleStart = Date.now() + 5000;
             }
         // If it hasn't been 5 seconds since appearing or disappearing, no change.
