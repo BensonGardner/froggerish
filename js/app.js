@@ -30,7 +30,7 @@ var Entity = function() {
 
 Entity.prototype.start = function(extraTime) {
     this.x = -101;
-    this.y = (((Math.round(Math.random() + Math.random())) + 1) * 83) + this.placementAdjust;
+    this.y = ((Math.round((3 * Math.random()) + 0.5)) * 83) + this.placementAdjust;
     this.cycleStart(extraTime);
 }
 
