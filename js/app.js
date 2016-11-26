@@ -12,7 +12,8 @@ Code written by Benson Gardner for Classic Arcade Game Clone Project. */
 
 var allEnemies = [],
     speedModifier = 2,
-    lastBugTime;
+    lastBugTime,
+    level = 1;
 
 // Create a superclass to apply to player, enemies, and gems.
 
@@ -202,6 +203,7 @@ Player.prototype.update = function() {
         this.reset();
         Enemy.createFirstBug();
         speedModifier += 0.6;
+        level++;
     }
 };
 

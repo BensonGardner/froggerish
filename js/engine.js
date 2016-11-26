@@ -25,8 +25,10 @@ var Engine = (function(global) {
         ctx = canvas.getContext('2d'),
         lastTime;
 
+    canvas.style.margin = 0;
     canvas.width = 505;
     canvas.height = 606;
+    ctx.font = "bolder 40px Helvetica";
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
@@ -137,6 +139,13 @@ var Engine = (function(global) {
             }
         }
 
+        /* Write the current level at the top of the canvas -- first writing over
+        * the previous level in white to erase it.
+        */
+        ctx.fillStyle = "#FFF";
+        ctx.fillText("Level " + (level - 1), 185, 40);
+        ctx.fillStyle = "#101010";
+        ctx.fillText("Level " + level, 185, 40);
         renderEntities();
     }
 
